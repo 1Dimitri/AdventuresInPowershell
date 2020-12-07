@@ -65,7 +65,7 @@ function Start-ProcessAndWait {
 
 <#
 .SYNOPSIS
-    Launches the NSI engine and waits for it has finished
+    Launches the MSI engine and waits for it has finished
 .DESCRIPTION
     Long description
 .EXAMPLE
