@@ -1,4 +1,4 @@
-unction Out-IniFile($InputObject, $FilePath)
+function Out-IniFile($InputObject, $FilePath)
 {
     $outFile = New-Item -ItemType file -Path $Filepath
     foreach ($i in $InputObject.keys)
