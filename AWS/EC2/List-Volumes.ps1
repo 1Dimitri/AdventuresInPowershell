@@ -1,8 +1,8 @@
 # https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-windows-volumes.html#windows-list-disks
-# get the letter,volume,aws volume match
 
 # List the disks
 function Convert-SCSITargetIdToDeviceName {
+  [CmdletBinding()]
   param([int]$SCSITargetId)
   If ($SCSITargetId -eq 0) {
     return "sda1"
@@ -14,6 +14,9 @@ function Convert-SCSITargetIdToDeviceName {
   $deviceName += [char](0x61 + $SCSITargetId % 26)
   return $deviceName
 }
+
+function Get-EC2DiskMapping {
+  [CmdletBinding()]
 
 [string[]]$array1 = @()
 [string[]]$array2 = @()
@@ -30,6 +33,7 @@ While ($i -ne ($array2.Count)) {
   $array3 += ((Get-Volume -Path $array2[$i] | Get-Partition | Get-Disk).SerialNumber) -replace "_[^ ]*$" -replace "vol", "vol-"
   $array4 += ((Get-Volume -Path $array2[$i] | Get-Partition | Get-Disk).FriendlyName)
   $i ++
+  
 }
 
 [array[]]$array = $array1, $array2, $array3, $array4
@@ -39,16 +43,16 @@ Try {
   $Region = Get-EC2InstanceMetadata -Category "Region" | Select-Object -ExpandProperty SystemName
 }
 Catch {
-  Write-Host "Could not access the instance Metadata using AWS Get-EC2InstanceMetadata CMDLet.
-Verify you have AWSPowershell SDK version '3.1.73.0' or greater installed and Metadata is enabled for this instance." -ForegroundColor Yellow
+  Write-Error "Could not access the instance Metadata using AWS Get-EC2InstanceMetadata CmdLet.
+Verify you have AWSPowershell SDK version '3.1.73.0' or greater installed and Metadata is enabled for this instance." 
 }
 Try {
   $BlockDeviceMappings = (Get-EC2Instance -Region $Region -Instance $InstanceId).Instances.BlockDeviceMappings
   $VirtualDeviceMap = (Get-EC2InstanceMetadata -Category "BlockDeviceMapping").GetEnumerator() | Where-Object { $_.Key -ne "ami" }
 }
 Catch {
-  Write-Host "Could not access the AWS API, therefore, VolumeId is not available.
-Verify that you provided your access keys or assigned an IAM role with adequate permissions." -ForegroundColor Yellow
+  Write-Error "Could not access the AWS API, therefore, VolumeId is not available.
+Verify that you provided your access keys or assigned an IAM role with adequate permissions." 
 }
 
 Get-disk | ForEach-Object {
@@ -123,3 +127,4 @@ Get-disk | ForEach-Object {
   }
 } | Sort-Object Disk | Format-Table -AutoSize -Property Disk, Partitions, DriveLetter, EbsVolumeId, Device, VirtualDevice, DeviceName, VolumeName
 
+}
