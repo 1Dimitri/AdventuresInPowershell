@@ -5,7 +5,7 @@ Function Test-ADUser {
      $Identity  
      )  
       Try {  
-        Get-ADuser -Identity $Identity -ErrorAction Stop  
+        Get-ADuser -Identity $Identity -ErrorAction Stop   | Out-Null
         return $true  
         }   
      Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {  
